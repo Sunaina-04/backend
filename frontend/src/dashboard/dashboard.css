@@ -1,0 +1,176 @@
+/* ── Dashboard layout ─────────────────────────────────────── */
+.dashboard-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 16px 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header-content h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+/* Admin Dashboard inner header bar */
+.header {
+  height: 64px;
+  background: #1f2937;
+  color: white;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.header span {
+  color: #93c5fd;
+  margin-left: 8px;
+  font-weight: 500;
+}
+
+/* ── Main two-column layout ───────────────────────────────── */
+.dashboard {
+  display: flex;
+  height: calc(100vh - 72px);
+}
+
+/* ── Sidebar ──────────────────────────────────────────────── */
+.sidebar {
+  width: 260px;
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.sidebar h2,
+.sidebar h3 {
+  margin-bottom: 16px;
+  font-size: 16px;
+}
+
+.sidebar button {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  color: #1f2937;
+  cursor: pointer;
+}
+
+.sidebar button:hover {
+  background: #e2e8f0;
+}
+
+/* ── Incident feed (User dashboard) ──────────────────────── */
+.feed-container {
+  max-height: calc(100vh - 280px);
+  overflow-y: auto;
+  margin-bottom: 16px;
+}
+
+.empty-msg {
+  color: #9ca3af;
+  font-size: 14px;
+  text-align: center;
+  padding: 20px;
+}
+
+.incident-card {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.incident-card b {
+  color: #dc2626;
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.incident-card p {
+  margin: 4px 0;
+  font-size: 13px;
+  color: #4b5563;
+}
+
+.delete-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #fee2e2;
+  color: #dc2626;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0;
+}
+
+.delete-btn:hover {
+  background: #fecaca;
+}
+
+.sidebar-img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin: 8px 0;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.card-footer small {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.report-btn {
+  width: 100%;
+  padding: 12px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.report-btn:hover {
+  background: #2563eb;
+}
+
+/* ── Map panel ────────────────────────────────────────────── */
+.map-container {
+  flex: 1;
+  height: 100%;
+  position: relative;
+}

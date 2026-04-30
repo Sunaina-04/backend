@@ -1,0 +1,169 @@
+:root {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --bg-color: #f4f7f6;
+  --text-color: #1f2937;
+  --surface-color: #ffffff;
+  --border-color: #d1d5db;
+  --button-bg: #2563eb;
+  --button-hover-bg: #1d4ed8;
+  --link-color: #1d4ed8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+#root {
+  width: 100%;
+}
+
+a {
+  color: var(--link-color);
+}
+
+input {
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 1rem;
+  background-color: var(--surface-color);
+  color: var(--text-color);
+}
+
+button {
+  padding: 12px;
+  border-radius: 6px;
+  border: none;
+  background-color: var(--button-bg);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.25s ease;
+}
+
+button:hover {
+  background-color: var(--button-hover-bg);
+}
+
+.auth-box {
+  width: min(92vw, 420px);
+  margin: 10em auto 0;
+  padding: 2rem;
+  box-sizing: border-box;
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  text-align: center;
+}:root {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --bg-color: #f4f7f6;
+  --text-color: #1f2937;
+  --surface-color: #ffffff;
+  --border-color: #d1d5db;
+  --navbar-bg: #ffffff;
+  --button-bg: #2563eb;
+  --button-hover-bg: #1d4ed8;
+  --link-color: #1d4ed8;
+}
+
+[data-theme='dark'] {
+  --bg-color: #0f172a;
+  --text-color: #e5e7eb;
+  --surface-color: #1e293b;
+  --border-color: #475569;
+  --navbar-bg: #1e293b;
+  --button-bg: #3b82f6;
+  --button-hover-bg: #2563eb;
+  --link-color: #93c5fd;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+#root {
+  width: 100%;
+  margin: 0 auto;
+}
+
+a {
+  color: var(--link-color);
+}
+
+input {
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 1rem;
+  background-color: var(--surface-color);
+  color: var(--text-color);
+}
+
+button {
+  padding: 12px;
+  border-radius: 6px;
+  border: none;
+  background-color: var(--button-bg);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.25s ease;
+}
+
+button:hover {
+  background-color: var(--button-hover-bg);
+}
+
+.app-navbar {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 64px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  box-sizing: border-box;
+  background-color: var(--navbar-bg);
+  border-bottom: 1px solid var(--border-color);
+  z-index: 900;
+}
+
+.app-title {
+  margin: 0;
+  font-size: 1.2rem;
+  letter-spacing: 0.04em;
+}
+
+.theme-toggle {
+  width: auto;
+  padding: 10px 14px;
+  flex-shrink: 0;
+}
+
+.auth-box {
+  width: min(92vw, 420px);
+  margin: 10em auto 0;
+  padding: 2rem;
+  box-sizing: border-box;
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  text-align: center;
+}
