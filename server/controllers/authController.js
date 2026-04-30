@@ -1,24 +1,18 @@
-const userModel = require('../models/userModel');
+const authService = require('../services/authServices');
 
 // Handler for Registration
 const registerUser = async (req, res) => {
-    const { username, password } = req.body;
-
     try {
-        const users = await userModel.getAllUsers();
-        const existingUser = users.find(u => u.username === username);
-
-        if (existingUser) {
-            return res.status(400).json({ message: "Username already taken" });
-        }
-
-        // Create user object with a default role
-        const newUser = { username, password, role: 'User' };
-        await userModel.saveUser(newUser);
-
-        res.status(201).json({ message: "User registered successfully!" });
+        // Send data to service; wait for it to finish hashing and saving
+        const newUser = await authService.register(req.body);
+        
+        res.status(201).json({ 
+            message: "User registered successfully!", 
+            user: { username: newUser.username, role: newUser.role } 
+        });
     } catch (error) {
-        res.status(500).json({ message: "Internal Server Error" });
+        // Catch errors like "User already exists" thrown by the service
+        res.status(400).json({ message: error.message });
     }
 };
 
@@ -27,21 +21,17 @@ const loginUser = async (req, res) => {
     const { username, password } = req.body;
 
     try {
-        const users = await userModel.getAllUsers();
-        const user = users.find(u => u.username === username && u.password === password);
+        // Service verifies credentials and returns user details
+        const user = await authService.login(username, password);
 
-        if (!user) {
-            return res.status(401).json({ message: "Invalid username or password" });
-        }
-
-        // Send back the role so the Frontend knows where to redirect
         res.status(200).json({
             message: "Login successful",
             role: user.role,
             username: user.username
         });
     } catch (error) {
-        res.status(500).json({ message: "Internal Server Error" });
+        // 401 Unauthorized for failed login
+        res.status(401).json({ message: error.message });
     }
 };
 

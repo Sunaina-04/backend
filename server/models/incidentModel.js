@@ -1,32 +1,32 @@
-const fs = require('fs');
-const path = require('path');
+// 1. IMPORT MONGOOSE: No more manual JSON parsing!
+const mongoose = require('mongoose');
 
-const incidentsPath = path.join(__dirname, '../data/incidents.json');
+// 2. SCHEMA DEFINITION: Mapping your incident fields to MongoDB
+const incidentSchema = new mongoose.Schema({
+    latitude: { 
+        type: Number, 
+        required: true 
+    },
+    longitude: { 
+        type: Number, 
+        required: true 
+    },
+    description: { 
+        type: String, 
+        required: true 
+    },
+    priority: { 
+        type: String, 
+        enum: ['Low', 'Medium', 'High'], // Validates data before it hits the DB
+        default: 'Low' 
+    },
+    resolved: { 
+        type: Boolean, 
+        default: false // Replaces your 'resolved: false' logic from the JSON version
+    }
+}, { 
+    timestamps: true // Tracks when the incident was reported
+});
 
-const Incident = {
-  // Get all incidents
-  getAll: () => {
-    const data = fs.readFileSync(incidentsPath, 'utf8');
-    return JSON.parse(data);
-  },
-
-  // Add a new incident
-  create: (newIncident) => {
-    const incidents = Incident.getAll();
-
-    // Create a new object with a unique ID
-    const incidentToAdd = {
-      id: Date.now(), // Simple way to get a unique ID
-      ...newIncident,
-      resolved: false
-    };
-
-    incidents.push(incidentToAdd);
-    
-    // Save it back to the file
-    fs.writeFileSync(incidentsPath, JSON.stringify(incidents, null, 2));
-    return incidentToAdd;
-  }
-};
-
-module.exports = Incident;
+// 3. EXPORT MODEL: The 'Incident' model will now talk to the 'incidents' collection in Atlas
+module.exports = mongoose.model('Incident', incidentSchema);

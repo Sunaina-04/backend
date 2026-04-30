@@ -1,31 +1,25 @@
-const fs = require('fs').promises;
-const path = require('path');
+// 1. IMPORT MONGOOSE: We no longer need 'fs' or 'path' because we aren't reading files
+const mongoose = require('mongoose');
 
-const filePath = path.join(__dirname, '../data/users.json');
-
-const userModel = {
-    // 1. Get all users from the file
-    getAllUsers: async () => {
-        try {
-            const data = await fs.readFile(filePath, 'utf8');
-            return JSON.parse(data);
-        } catch (error) {
-            return [];
-        }
+// 2. SCHEMA DEFINITION: This acts as the blueprint for your data
+const userSchema = new mongoose.Schema({
+    username: { 
+        type: String, 
+        required: true, 
+        unique: true // MONGODB UPDATE: This automatically prevents duplicate usernames
     },
-
-    // 2. Add a new user to the file
-    saveUser: async (newUser) => {
-        try {
-            const users = await userModel.getAllUsers();
-            users.push(newUser);
-            await fs.writeFile(filePath, JSON.stringify(users, null, 2));
-            return true;
-        } catch (error) {
-            console.error("Error saving user:", error);
-            return false;
-        }
+    password: { 
+        type: String, 
+        required: true // This will store the BCRYPT HASH, not the plain text
+    },
+    role: { 
+        type: String, 
+        enum: ['User', 'Admin'], // ENFORCEMENT: Only allows these specific strings
+        default: 'User' 
     }
-};
+}, { 
+    timestamps: true // NEW: Automatically adds 'createdAt' and 'updatedAt' fields
+});
 
-module.exports = userModel;
+// 3. EXPORT MODEL: This provides the .findOne(), .create(), etc. methods to your services
+module.exports = mongoose.model('User', userSchema);
