@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const incidentController = require('../controllers/incidentController');
+const requireAuth = require('../middleware/requireAuth');
+router.get('/', requireAuth, incidentController.getIncidents);
 
-// 1. The GET route to fetch all incidents
-router.get('/', incidentController.getIncidents);
+router.post('/', requireAuth, incidentController.addIncident);
 
-// 2. The POST route to add a new incident
-router.post('/', incidentController.addIncident);
+router.put('/:id', requireAuth, incidentController.updateIncident);
 
 module.exports = router;

@@ -1,71 +1,126 @@
-// const express = require('express');
-// const cors = require('cors');
-// const authRoutes = require('./routes/authRoutes');
-// const incidentRoutes = require('./routes/incidentRoutes');
 
-// const app = express();
-
-// // Middleware
-// app.use(cors()); 
-// app.use(express.json()); 
-
-// // mounting
-// app.use('/api', authRoutes);
-// app.use('/api/incidents', incidentRoutes);
-
-// // self made middleware 
-// app.use((req, res, next) => {
-//     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-//     next();
-// });
-
-
-// const PORT = 5000;
-// app.listen(PORT, () => {
-//     console.log(`✅ Server running on http://localhost:${PORT}`);
-// });
-
-
-// 1. Core Modules & Environment Setup
 const express = require('express');
+const http = require('http');           
+const { Server } = require('socket.io'); 
 const cors = require('cors');
-const dotenv = require('dotenv'); // NEW: From new syllabus
-const connectDB = require('./config/db'); // NEW: The file we created earlier
+const cookieParser = require("cookie-parser"); 
+const session = require('express-session');
+const dotenv = require('dotenv');
+const jwt = require('jsonwebtoken');
+const prisma = require('./config/prisma');
 
 // 2. Load Configs
-dotenv.config(); // Must be at the very top to provide MONGO_URI to other files
+dotenv.config();
 
 // 3. Initialize App & Connect DB
 const app = express();
-connectDB(); // NEW: Connecting to MongoDB Atlas
+const server = http.createServer(app); 
 
-// 4. Global Middleware (Application-level)
-app.use(cors()); 
-app.use(express.json()); // Built-in Middleware: Body parser for JSON
+const io = new Server(server, {
+    cors: {
+        origin: ["http://localhost:5173", "http://localhost:3000"], 
+        methods: ["GET", "POST"],
+        credentials: true 
+    }
+});
 
-// 5. Your Logging Middleware (Self-made)
-// Moving this UP so it logs EVERY request, including the ones that hit routes below
+app.set('socketio', io);
+app.set('io', io);
+
+// 5. Global Middleware
+app.use(cors({
+    origin: ["http://localhost:5173", "http://localhost:3000"],
+    credentials: true 
+}));
+
+app.use(express.json()); 
+app.use(cookieParser()); 
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'incident-reporting-dev-secret',
+    name: 'incident.sid',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        maxAge: 24 * 60 * 60 * 1000 
+    }
+}));
+
 app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
     next();
 });
 
-// 6. Routes (Mounting)
+io.use((socket, next) => {
+    try {
+        const token = socket.handshake.auth?.token;
+
+        if (!token) {
+            return next(new Error('Unauthorized socket connection'));
+        }
+
+        const decoded = jwt.verify(
+            token,
+            process.env.JWT_SECRET || 'incident-reporting-jwt-secret'
+        );
+
+        socket.data.user = {
+            id: String(decoded.id),
+            username: decoded.username,
+            role: decoded.role
+        };
+
+        return next();
+    } catch (error) {
+        return next(new Error('Unauthorized socket connection'));
+    }
+});
+
+io.on('connection', (socket) => {
+    console.log(`New Client Connected: ${socket.id}`);
+
+    if (socket.data.user?.role === 'Admin') {
+        socket.join('admin');
+    }
+
+    socket.join(`user:${socket.data.user?.id}`);
+
+    socket.on('disconnect', () => {
+        console.log(' Client Disconnected');
+    });
+});
 const authRoutes = require('./routes/authRoutes');
 const incidentRoutes = require('./routes/incidentRoutes');
+const verifiedRoutes = require('./routes/verifiedRoutes');
 
-app.use('/api', authRoutes);
-app.use('/api/incidents', incidentRoutes);
+app.use('/api', authRoutes);           
+app.use('/api/incidents', incidentRoutes); 
+app.use('/api/verified-incidents', verifiedRoutes);
 
-// 7. Error-Handling Middleware (NEW: From new syllabus)
-// This MUST be the last middleware in the stack
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ message: 'Something went wrong on the server!' });
 });
 
-// 8. Server Start
-const PORT = process.env.PORT || 5000; // Use .env port if available
-app.listen(PORT, () => {
-    console.log(`✅ Server running on http://localhost:${PORT}`);
+const PORT = process.env.PORT || 5000;
+
+const startServer = async () => {
+    try {
+        await prisma.$connect();
+        server.listen(PORT, () => {
+            console.log(`✅ Server running on http://localhost:${PORT}`);
+        });
+    } catch (error) {
+        console.error('❌ Failed to connect to PostgreSQL:', error.message);
+        process.exit(1);
+    }
+};
+
+startServer();
+
+process.on('SIGINT', async () => {
+    await prisma.$disconnect();
+    process.exit(0);
 });

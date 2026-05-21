@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  User
+  Admin
+}
+
+enum Priority {
+  Low
+  Medium
+  High
+}
+
+model User {
+  id                String             @id @default(uuid())
+  username          String             @unique
+  password          String
+  role              Role               @default(User)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  incidents         Incident[]
+
+  @@map("users")
+}
+
+model Incident {
+  id          String    @id @default(uuid())
+  latitude    Float
+  longitude   Float
+  description String
+  priority    Priority  @default(Low)
+  resolved    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("incidents")
+}
+
+model VerifiedIncident {
+  id          String   @id @default(uuid())
+  latitude    Float
+  longitude   Float
+  description String
+  priority    Priority @default(Medium)
+  imageUrl    String?
+  userId      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@map("verified_incidents")
+}

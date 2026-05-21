@@ -2,30 +2,37 @@
 // Why require? It's an ODM (Object Data Mapper) that helps us talk to MongoDB using JavaScript objects.
 const mongoose = require('mongoose');
 
-// 2. We define an asynchronous function. 
-// Why async? Connecting to a database over the internet takes time; we don't want to freeze our whole app while waiting.
+// 2. We define an asynchronous function to connect to MongoDB.
 const connectDB = async () => {
   try {
-    // 3. We attempt to connect to the database.
-    // 'await' pauses this function until the connection is either successful or fails.
-    // 'process.env.MONGO_URI' pulls your secret connection string from your .env file.
-    const conn = await mongoose.connect(process.env.MONGO_URI);
-    
-    // 4. If successful, we log the host name (e.g., cluster0.mongodb.net) to the console.
-    // This helps us confirm exactly WHICH database we are connected to.
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
-    
+    const mongoUri = process.env.MONGO_URI;
+
+    if (mongoUri) {
+      try {
+        const conn = await mongoose.connect(mongoUri);
+        console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+        return;
+      } catch (err) {
+        console.error(`❌ Primary MongoURI failed: ${err.message}`);
+        console.warn('Attempting local MongoDB fallback...');
+      }
+    }
+
+    // Try local fallback
+    const localUri = 'mongodb://127.0.0.1:27017/incident-reporting';
+    try {
+      const connLocal = await mongoose.connect(localUri);
+      console.log(`✅ MongoDB Connected (fallback): ${connLocal.connection.host}`);
+      return;
+    } catch (errLocal) {
+      console.error(`❌ Local fallback failed: ${errLocal.message}`);
+      process.exit(1);
+    }
   } catch (err) {
-    // 5. If the connection fails (wrong password, no internet, etc.), the code jumps here.
-    // 'err.message' tells us exactly what went wrong.
-    console.error(`❌ Error: ${err.message}`);
-    
-    // 6. We kill the process. 
-    // Why? If the database isn't working, the rest of your app (which relies on data) won't work anyway.
-    process.exit(1); 
+    console.error(`❌ Unexpected DB error: ${err.message}`);
+    process.exit(1);
   }
 };
 
 // 7. We export the function so it can be used in server.js.
-// Why? This keeps our code modular—one file for connecting, one file for the server.
 module.exports = connectDB;
