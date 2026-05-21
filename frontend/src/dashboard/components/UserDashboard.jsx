@@ -3,8 +3,7 @@ import { useState, useEffect } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import IncidentForm from "./IncidentForm";
-
-const API_BASE_URL = "http://localhost:5000";
+import { API_BASE_URL } from "../../config/api";
 
 const normalizeIncident = (incident) => ({
   ...incident,

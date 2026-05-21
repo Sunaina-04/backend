@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import IndiaMap from "./IndiaMap.jsx";
 import { io } from "socket.io-client";
-
-const API_BASE_URL = "http://localhost:5000";
+import { API_BASE_URL } from "../config/api";
 
 const normalizeIncident = (incident) => {
   if (!incident) {

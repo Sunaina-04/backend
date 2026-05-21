@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { API_BASE_URL } from '../config/api';
 
 const LoginPage = ({ setIsLoggedIn, setRole }) => {
   const [username, setUsername] = useState('');
@@ -10,7 +11,7 @@ const LoginPage = ({ setIsLoggedIn, setRole }) => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5000/api/login', {
+      const response = await fetch(`${API_BASE_URL}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
@@ -29,7 +30,7 @@ const LoginPage = ({ setIsLoggedIn, setRole }) => {
         setError(data.message || 'Invalid Credentials');
       }
     } catch (err) {
-      setError('Server is offline. Check if your backend is running on port 5000.');
+      setError('Unable to reach the backend service. Please try again.');
     }
   };
 
