@@ -30,6 +30,13 @@ const isAllowedOrigin = (origin) => {
     return /^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin);
 };
 
+const corsOptions = {
+    origin: (origin, callback) => callback(null, isAllowedOrigin(origin)),
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    optionsSuccessStatus: 204
+};
+
 // 3. Initialize App & Connect DB
 const app = express();
 const server = http.createServer(app); 
@@ -37,7 +44,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
         origin: (origin, callback) => callback(null, isAllowedOrigin(origin)), 
-        methods: ["GET", "POST"],
+        methods: ["GET", "POST", "OPTIONS"],
         credentials: true 
     }
 });
@@ -46,10 +53,8 @@ app.set('socketio', io);
 app.set('io', io);
 
 // 5. Global Middleware
-app.use(cors({
-    origin: (origin, callback) => callback(null, isAllowedOrigin(origin)),
-    credentials: true 
-}));
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 app.use(express.json()); 
 app.use(cookieParser()); 
@@ -123,12 +128,14 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
+const HOST = '0.0.0.0';
+const publicUrl = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
 
 const startServer = async () => {
     try {
         await prisma.$connect();
-        server.listen(PORT, () => {
-            console.log(`✅ Server running on http://localhost:${PORT}`);
+        server.listen(PORT, HOST, () => {
+            console.log(`✅ Server running on ${publicUrl}`);
         });
     } catch (error) {
         console.error('❌ Failed to connect to PostgreSQL:', error.message);
