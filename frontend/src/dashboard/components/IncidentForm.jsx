@@ -49,7 +49,7 @@ export default function IncidentForm({ onClose, onSubmit }) {
       ...form,
       latitude: parseFloat(form.latitude),
       longitude: parseFloat(form.longitude),
-      image: imagePreview,
+      imageUrl: imagePreview,
       timestamp: new Date().toLocaleTimeString()
     });
     onClose();

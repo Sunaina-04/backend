@@ -1,33 +1,97 @@
 import { useState, useEffect } from "react";
 import IndiaMap from "./IndiaMap.jsx";
+import { io } from "socket.io-client";
+
+const API_BASE_URL = "http://localhost:5000";
+
+const normalizeIncident = (incident) => {
+  if (!incident) {
+    return incident;
+  }
+
+  return {
+    ...incident,
+    id: incident.id || incident._id,
+    _id: incident._id || incident.id
+  };
+};
 
 export default function Dashboard() {
-  // 1. Initialize with an empty array
   const [incidents, setIncidents] = useState([]);
   const [view, setView] = useState("active"); 
   const [loading, setLoading] = useState(true);
 
-  // 2. Fetch data from the Backend API on load
   useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    let socket;
+    let isMounted = true;
+
     const fetchIncidents = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/incidents");
+        const response = await fetch(`${API_BASE_URL}/api/incidents`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
         const data = await response.json();
-        setIncidents(data);
+
+        if (!isMounted) {
+          return;
+        }
+
+        setIncidents(data.map(normalizeIncident));
         setLoading(false);
       } catch (error) {
         console.error("Error fetching incidents:", error);
-        setLoading(false);
+
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchIncidents();
+    if (token) {
+      socket = io(API_BASE_URL, {
+        auth: { token },
+        withCredentials: true,
+        transports: ["websocket", "polling"]
+      });
+
+      socket.on("connect_error", (error) => {
+        console.error("Socket connection error:", error.message);
+      });
+
+      socket.on("document-updated", ({ incident }) => {
+        if (!incident) {
+          return;
+        }
+
+        const normalizedIncident = normalizeIncident(incident);
+
+        setIncidents((prev) => {
+          const exists = prev.some((item) => item.id === normalizedIncident.id);
+
+          if (exists) {
+            return prev.map((item) =>
+              item.id === normalizedIncident.id ? { ...item, ...normalizedIncident } : item
+            );
+          }
+
+          return [normalizedIncident, ...prev];
+        });
+      });
+    }
+
+    return () => {
+      isMounted = false;
+
+      if (socket) {
+        socket.off("document-updated");
+        socket.disconnect();
+      }
+    };
   }, []);
 
-  // 3. Updated to handle backend updates (Optional: requires a PUT route on backend)
   const updateIncident = async (id, updates) => {
-    // For now, we update the UI state
-    // To make this permanent, you'd add a fetch('.../api/incidents/' + id, { method: 'PUT' })
     setIncidents((prev) =>
       prev.map((i) =>
         i.id === id ? { ...i, ...updates } : i

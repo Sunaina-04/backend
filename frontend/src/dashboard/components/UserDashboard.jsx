@@ -4,6 +4,14 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import IncidentForm from "./IncidentForm";
 
+const API_BASE_URL = "http://localhost:5000";
+
+const normalizeIncident = (incident) => ({
+  ...incident,
+  id: incident.id || incident._id,
+  _id: incident._id || incident.id
+});
+
 // Leaflet Icon Fix
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -25,27 +33,32 @@ export default function UserDashboard() {
   const [incidents, setIncidents] = useState([]);
   const [mapCenter, setMapCenter] = useState([30.3862, 76.7894]);
 
-  // --- NEW: Load existing incidents from backend when page opens ---
   useEffect(() => {
-    fetch("http://localhost:5000/api/incidents")
+    const token = localStorage.getItem("authToken");
+
+    fetch(`${API_BASE_URL}/api/incidents`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    })
       .then(res => res.json())
-      .then(data => setIncidents(data))
+      .then(data => setIncidents(data.map(normalizeIncident)))
       .catch(err => console.error("Error loading incidents:", err));
   }, []);
 
-  // --- UPDATED: Send report to Backend ---
   const handleAddIncident = async (newIncident) => {
     try {
-      const response = await fetch("http://localhost:5000/api/incidents", {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(`${API_BASE_URL}/api/incidents`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newIncident), // Sends type, desc, lat, lng, and image
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify(newIncident), // Sends type, desc, lat, lng, and imageUrl
       });
 
       if (response.ok) {
-        const savedIncident = await response.json();
+        const savedIncident = normalizeIncident(await response.json());
         
-        // Update local state so UI reflects the new report immediately
         setIncidents((prev) => [savedIncident, ...prev]);
         setMapCenter([savedIncident.latitude, savedIncident.longitude]);
         setIsFormOpen(false);
@@ -58,7 +71,6 @@ export default function UserDashboard() {
   };
 
   const deleteIncident = (id) => {
-    // Note: To make this permanent, you'd need a DELETE route on your backend.
     setIncidents((prev) => prev.filter(inc => inc.id !== id));
   };
 
@@ -73,7 +85,7 @@ export default function UserDashboard() {
               <button className="delete-btn" onClick={() => deleteIncident(i.id)}>×</button>
               <b>{i.type || "General Incident"}</b>
               <p>{i.description}</p>
-              {i.image && <img src={i.image} alt="incident" className="sidebar-img" />}
+              {i.imageUrl && <img src={i.imageUrl} alt="incident" className="sidebar-img" />}
               <div className="card-footer">
                 <small>📍 {Number(i.latitude).toFixed(4)}, {Number(i.longitude).toFixed(4)}</small>
                 <small>{i.timestamp || "Just now"}</small>

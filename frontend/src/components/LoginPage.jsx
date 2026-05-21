@@ -19,6 +19,9 @@ const LoginPage = ({ setIsLoggedIn, setRole }) => {
       const data = await response.json();
 
       if (response.ok) {
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('authRole', data.role);
+        localStorage.setItem('authUsername', data.username || username);
         setIsLoggedIn(true);
         setRole(data.role);
         navigate('/dashboard');
