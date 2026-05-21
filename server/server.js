@@ -14,6 +14,8 @@ dotenv.config();
 
 const allowedOrigins = [
     process.env.FRONTEND_URL,
+    'https://backend-git-main-sunaina-04s-projects.vercel.app',
+    'https://backend-b3gg3jlij-sunaina-04s-projects.vercel.app',
     'http://localhost:5173',
     'http://localhost:3000'
 ].filter(Boolean);
