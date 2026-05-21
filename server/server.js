@@ -12,13 +12,31 @@ const prisma = require('./config/prisma');
 // 2. Load Configs
 dotenv.config();
 
+const allowedOrigins = [
+    process.env.FRONTEND_URL,
+    'http://localhost:5173',
+    'http://localhost:3000'
+].filter(Boolean);
+
+const isAllowedOrigin = (origin) => {
+    if (!origin) {
+        return true;
+    }
+
+    if (allowedOrigins.includes(origin)) {
+        return true;
+    }
+
+    return /^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin);
+};
+
 // 3. Initialize App & Connect DB
 const app = express();
 const server = http.createServer(app); 
 
 const io = new Server(server, {
     cors: {
-        origin: ["http://localhost:5173", "http://localhost:3000"], 
+        origin: (origin, callback) => callback(null, isAllowedOrigin(origin)), 
         methods: ["GET", "POST"],
         credentials: true 
     }
@@ -29,7 +47,7 @@ app.set('io', io);
 
 // 5. Global Middleware
 app.use(cors({
-    origin: ["http://localhost:5173", "http://localhost:3000"],
+    origin: (origin, callback) => callback(null, isAllowedOrigin(origin)),
     credentials: true 
 }));
 
